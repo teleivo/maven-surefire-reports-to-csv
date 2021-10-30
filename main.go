@@ -43,6 +43,7 @@ func run(args []string, out io.Writer) error {
 	}
 
 	// TODO collect errors in slice and report all of them
+	//nolint:errcheck
 	filepath.WalkDir(*src, func(path string, d fs.DirEntry, _ error) error {
 		// TODO what to do on err?
 		if d.IsDir() || strings.ToLower(filepath.Ext(path)) != ".xml" {
