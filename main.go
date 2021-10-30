@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -36,21 +37,27 @@ func run(args []string, out io.Writer) error {
 		return errors.New("dest must be provided")
 	}
 
-	// TODO could probably use a []err since there errors could accumulate but
-	// I still want to convert as many reports into csv's as possible
-	files, err := os.ReadDir(*src)
-	for _, f := range files {
-		if !f.IsDir() && strings.ToLower(filepath.Ext(f.Name())) != ".xml" {
-			continue
+	err = os.Mkdir(*dest, 0750)
+	if err != nil {
+		return err
+	}
+
+	// TODO collect errors in slice and report all of them
+	filepath.WalkDir(*src, func(path string, d fs.DirEntry, _ error) error {
+		// TODO what to do on err?
+		if d.IsDir() || strings.ToLower(filepath.Ext(path)) != ".xml" {
+			return nil
 		}
 
-		err = writeCSV(filepath.Join(*src, f.Name()), filepath.Join(*dest, CSVFilename(f.Name())))
+		err = writeCSV(path, filepath.Join(*dest, CSVFilename(path)))
 		if err != nil {
-			fmt.Fprintf(out, "Failed to convert %q due to %s\n", f.Name(), err)
+			fmt.Fprintf(out, "Failed to convert %q due to %s\n", path, err)
 		} else {
-			fmt.Fprintf(out, "Converted %q\n", f.Name())
+			fmt.Fprintf(out, "Converted %q\n", path)
 		}
-	}
+
+		return nil
+	})
 
 	return err
 }
