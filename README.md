@@ -18,7 +18,7 @@ Download a binary for your platform at
 And convert Surefire XML reports to CSV
 
 ```sh
-./sure \
+sure \
   -src ~/code/yourproject \
   -dest ./here
 ```
