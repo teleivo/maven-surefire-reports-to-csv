@@ -1,16 +1,29 @@
-# Maven Surefire Reports To CSV
+# sure (Maven Surefire Reports To CSV)
 
-Helps analyze test count and duration in Java projects built using
+`sure` helps analyze test count and duration in Java projects built using
 [Maven](https://maven.apache.org/) and
 [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/).
 
 Maven Surefire Plugin generates reports after running tests in a Maven module.
-Surefire can be configured to write the reports in XML. This project allows you
+Surefire can be configured to write the reports in XML. `sure` allows you
 to convert them into CSV. This way you can easily analyze the number of tests,
 their duration either individually or for example per Maven module in any tool
 you whish.
 
 ## Usage
+
+Download a binary for your platform at
+[releases](https://github.com/teleivo/maven-surefire-reports-to-csv/releases)
+
+And convert Surefire XML reports to CSV
+
+```sh
+./sure \
+  -src ~/code/yourproject \
+  -dest ./here
+```
+
+### Compile
 
 If you have [Go](https://golang.org/) installed and want to compile yourself
 :smile: you can
@@ -26,12 +39,8 @@ go run main.go \
 Or build a binary first
 
 ```sh
-go build
+go build -o sure
 ```
-
-### Pre-built
-
-TODO build binaries and release them
 
 ## Limitation
 

@@ -16,3 +16,5 @@ out
 
 # Ignore default binary
 surefire-reports-to-csv
+# and named binary
+sure
