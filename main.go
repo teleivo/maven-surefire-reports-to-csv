@@ -26,6 +26,7 @@ func run(args []string, out io.Writer) error {
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 	src := flags.String("src", "", "Source directory containing Maven Surefire XML reports")
 	dest := flags.String("dest", "", "Destination directory where CSV will be written to")
+	debug := flags.Bool("debug", false, "Print debug information")
 	err := flags.Parse(args[1:])
 	if err != nil {
 		return err
@@ -54,7 +55,9 @@ func run(args []string, out io.Writer) error {
 		if err != nil {
 			fmt.Fprintf(out, "Failed to convert %q due to %s\n", path, err)
 		} else {
-			fmt.Fprintf(out, "Converted %q\n", path)
+			if *debug {
+				fmt.Fprintf(out, "Converted %q\n", path)
+			}
 		}
 
 		return nil
