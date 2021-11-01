@@ -13,6 +13,7 @@
 
 # Ignore destination used for testing conversion
 out
+here
 
 # Ignore default binary
 surefire-reports-to-csv
