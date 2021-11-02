@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestConvert(t *testing.T) {
@@ -85,31 +86,43 @@ dhis-service-analytics,org.hisp.dhis.analytics.data.AnalyticsServiceTest,testSet
 }
 
 func TestCsvConverter(t *testing.T) {
-	var w bytes.Buffer
-	c := csvConverter{from: "testdata", log: &w}
+	t.Run("OneCSVFilePerXML", func(t *testing.T) {
+		var w bytes.Buffer
+		c := csvConverter{from: "testdata/input", log: &w}
 
-	dest := t.TempDir()
+		dest := t.TempDir()
 
-	err := c.to(dest)
-	if err != nil {
-		t.Fatalf("expected no error but got %s", err)
-	}
+		err := c.to(dest)
+		if err != nil {
+			t.Fatalf("expected no error but got %s", err)
+		}
 
-	de, err := os.ReadDir(dest)
-	if err != nil {
-		t.Fatalf("failed to read dest dir %q due to %s", dest, err)
-	}
+		de, err := os.ReadDir(dest)
+		if err != nil {
+			t.Fatalf("failed to read dest dir %q due to %s", dest, err)
+		}
 
-	if got := len(de); got != 1 {
-		t.Errorf("expected 1 entry in %q, instead got %d", dest, got)
-	}
+		want, err := os.ReadDir("testdata/expected/separate")
+		if err != nil {
+			t.Fatalf("failed to read dest dir %q due to %s", dest, err)
+		}
 
-	got := de[0]
-	if !got.Type().IsRegular() {
-		t.Errorf("expected regular file to be created instead got %v", got)
-	}
+		var wantNames []string
+		for _, d := range want {
+			wantNames = append(wantNames, d.Name())
+		}
 
-	if want := "TEST-org.hisp.dhis.analytics.data.AnalyticsServiceTest.csv"; got.Name() != want {
-		t.Errorf("expected file %q to be created at dest instead got %q", want, got.Name())
-	}
+		var gotNames []string
+		for _, got := range de {
+			if !got.Type().IsRegular() {
+				t.Errorf("expected regular file to be created instead got %v", got)
+			}
+			gotNames = append(gotNames, got.Name())
+		}
+
+		less := func(a, b string) bool { return a < b }
+		if diff := cmp.Diff(wantNames, gotNames, cmpopts.SortSlices(less)); diff != "" {
+			t.Errorf("convert() file mismatch (-want +got): \n%s", diff)
+		}
+	})
 }

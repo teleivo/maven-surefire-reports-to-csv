@@ -1,0 +1,6 @@
+module,class,test,duration,basedir
+dhis-service-analytics,org.hisp.dhis.analytics.data.AnalyticsServiceTest,testMappingAggregation,46.089,/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-analytics
+dhis-service-analytics,org.hisp.dhis.analytics.data.AnalyticsServiceTest,queryValidationResultTable,41.134,/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-analytics
+dhis-service-analytics,org.hisp.dhis.analytics.data.AnalyticsServiceTest,testGridAggregation,42.103,/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-analytics
+dhis-service-analytics,org.hisp.dhis.analytics.data.AnalyticsServiceTest,testSetAggregation,41.879,/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-analytics
+dhis-service-administration,org.hisp.dhis.maintenance.HardDeleteAuditTest,,0,/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-administration

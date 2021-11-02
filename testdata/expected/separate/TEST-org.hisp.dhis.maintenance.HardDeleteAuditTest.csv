@@ -1,0 +1,2 @@
+module,class,test,duration,basedir
+dhis-service-administration,org.hisp.dhis.maintenance.HardDeleteAuditTest,,0,/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-administration
