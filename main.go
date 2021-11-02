@@ -38,25 +38,44 @@ func run(args []string, out io.Writer) error {
 		return errors.New("dest must be provided")
 	}
 
-	err = os.Mkdir(*dest, 0750)
+	return csvConverter{from: *src, log: out, debug: *debug}.to(*dest)
+}
+
+type csvConverter struct {
+	from  string
+	log   io.Writer
+	debug bool
+}
+
+func (cc csvConverter) to(dest string) error {
+	s, err := os.Stat(dest)
+	if errors.Is(err, os.ErrNotExist) {
+		err = os.Mkdir(dest, 0750)
+		if err != nil {
+			return err
+		}
+	}
 	if err != nil {
 		return err
+	}
+	if s != nil && !s.IsDir() {
+		return fmt.Errorf("dest path exists but is not a directory %q", dest)
 	}
 
 	// TODO collect errors in slice and report all of them
 	//nolint:errcheck
-	filepath.WalkDir(*src, func(path string, d fs.DirEntry, _ error) error {
+	filepath.WalkDir(cc.from, func(path string, d fs.DirEntry, _ error) error {
 		// TODO what to do on err?
 		if d.IsDir() || strings.ToLower(filepath.Ext(path)) != ".xml" {
 			return nil
 		}
 
-		err = writeCSV(path, filepath.Join(*dest, CSVFilename(path)))
+		err = writeCSV(path, filepath.Join(dest, CSVFilename(path)))
 		if err != nil {
-			fmt.Fprintf(out, "Failed to convert %q due to %s\n", path, err)
+			fmt.Fprintf(cc.log, "Failed to convert %q due to %s\n", path, err)
 		} else {
-			if *debug {
-				fmt.Fprintf(out, "Converted %q\n", path)
+			if cc.debug {
+				fmt.Fprintf(cc.log, "Converted %q\n", path)
 			}
 		}
 
@@ -72,12 +91,24 @@ func CSVFilename(file string) string {
 }
 
 func writeCSV(file string, dest string) error {
-	var suite surefire.TestSuite
-	data, err := os.ReadFile(file)
+	r, err := os.Open(file)
 	if err != nil {
 		return err
 	}
-	err = xml.Unmarshal([]byte(data), &suite)
+	defer r.Close()
+
+	w, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+
+	return convert(r, w)
+}
+
+func convert(r io.Reader, w io.Writer) error {
+	var suite surefire.TestSuite
+	err := xml.NewDecoder(r).Decode(&suite)
 	if err != nil {
 		return err
 	}
@@ -99,20 +130,15 @@ func writeCSV(file string, dest string) error {
 		records = append(records, []string{module, v.ClassName, v.Name, v.Time, basedir})
 	}
 
-	f, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	w := csv.NewWriter(f)
+	c := csv.NewWriter(w)
 	for _, record := range records {
-		if err := w.Write(record); err != nil {
+		if err := c.Write(record); err != nil {
 			return err
 		}
 	}
 	// Write any buffered data to the underlying writer (standard output).
-	w.Flush()
-	if err := w.Error(); err != nil {
+	c.Flush()
+	if err := c.Error(); err != nil {
 		return err
 	}
 

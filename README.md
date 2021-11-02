@@ -44,9 +44,6 @@ go build -o sure
 
 ## Limitation
 
-* This project is more like a script with typesafety. I did not write any
-  tests. I did only run sanity checks on the CSV. Use at your own risk.
-
 * You need to concatenate the CSV files into a single file yourself if that is
   what you prefer for your analysis. Be aware that each CSV has a header that
   you will need to ignore. This might work for you :smile;
