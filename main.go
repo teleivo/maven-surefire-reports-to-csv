@@ -2,15 +2,16 @@ package main
 
 import (
 	"encoding/csv"
-	"encoding/xml"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/teleivo/surefire-reports-to-csv/surefire"
 )
@@ -25,7 +26,8 @@ func main() {
 func run(args []string, out io.Writer) error {
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 	src := flags.String("src", "", "Source directory containing Maven Surefire XML reports.")
-	dest := flags.String("dest", "", "Destination directory where CSV will be written to. It will be created if does not exist.")
+	dest := flags.String("dest", "", "Destination directory where CSV(s) will be written to. It will be created if does not exist.")
+	concat := flags.Bool("concat", false, "Concatenate all Maven Surefire XML reports into one CSV file.")
 	debug := flags.Bool("debug", false, "Print debug information.")
 	err := flags.Parse(args[1:])
 	if err != nil {
@@ -38,13 +40,19 @@ func run(args []string, out io.Writer) error {
 		return errors.New("dest must be provided")
 	}
 
-	return csvConverter{from: *src, log: out, debug: *debug}.to(*dest)
+	return csvConverter{
+		from:   *src,
+		concat: *concat,
+		log:    out,
+		debug:  *debug,
+	}.to(*dest)
 }
 
 type csvConverter struct {
-	from  string
-	log   io.Writer
-	debug bool
+	from   string
+	concat bool
+	log    io.Writer
+	debug  bool
 }
 
 func (cc csvConverter) to(dest string) error {
@@ -59,6 +67,14 @@ func (cc csvConverter) to(dest string) error {
 		return err
 	}
 
+	var converter converter
+	if cc.concat {
+		converter = &concatConverter{to: dest, once: &sync.Once{}}
+	} else {
+		converter = &separateConverter{to: dest}
+	}
+	defer converter.Close()
+
 	// TODO collect errors in slice and report all of them
 	//nolint:errcheck
 	filepath.WalkDir(cc.from, func(path string, d fs.DirEntry, _ error) error {
@@ -67,13 +83,13 @@ func (cc csvConverter) to(dest string) error {
 			return nil
 		}
 
-		err = writeCSV(path, filepath.Join(dest, CSVFilename(path)))
+		err = converter.convert(path)
 		if err != nil {
 			fmt.Fprintf(cc.log, "Failed to convert %q due to %s\n", path, err)
-		} else {
-			if cc.debug {
-				fmt.Fprintf(cc.log, "Converted %q\n", path)
-			}
+			return nil
+		}
+		if cc.debug {
+			fmt.Fprintf(cc.log, "Converted %q\n", path)
 		}
 
 		return nil
@@ -82,62 +98,113 @@ func (cc csvConverter) to(dest string) error {
 	return err
 }
 
-func CSVFilename(file string) string {
-	fn := filepath.Base(file)
-	return strings.TrimSuffix(fn, filepath.Ext(fn)) + ".csv"
+type converter interface {
+	convert(from string) error
+	io.Closer
 }
 
-func writeCSV(file string, dest string) error {
-	r, err := os.Open(file)
+type concatConverter struct {
+	to string
+	// TODO
+	w    io.WriteCloser
+	csv  *csv.Writer
+	once *sync.Once
+}
+
+type separateConverter struct {
+	to string
+}
+
+func (cc *concatConverter) convert(from string) error {
+	// TODO error handling how to?
+	var err error
+	cc.once.Do(func() {
+		w, err := os.Create(path.Join(cc.to, "surefire.csv"))
+		if err != nil {
+			return
+		}
+
+		cc.w = w
+		cc.csv = csv.NewWriter(w)
+		err = cc.csv.Write(surefire.Header())
+	})
+	if err != nil {
+		return err
+	}
+
+	r, err := os.Open(from)
 	if err != nil {
 		return err
 	}
 	defer r.Close()
 
-	w, err := os.Create(dest)
+	rr, err := surefire.Records(r)
+	if err != nil {
+		return err
+	}
+	for _, record := range rr {
+		if err := cc.csv.Write(record); err != nil {
+			return err
+		}
+	}
+
+	cc.csv.Flush()
+	if err := cc.csv.Error(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cc *concatConverter) Close() error {
+	// TODO do I need to keep the io.Writer so I can close it?
+	if cc.csv != nil {
+		return cc.w.Close()
+	}
+	return nil
+}
+
+func (sc *separateConverter) convert(from string) error {
+	r, err := os.Open(from)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	w, err := os.Create(filepath.Join(sc.to, CSVFilename(from)))
 	if err != nil {
 		return err
 	}
 	defer w.Close()
 
-	return convert(r, w)
-}
-
-func convert(r io.Reader, w io.Writer) error {
-	var suite surefire.TestSuite
-	err := xml.NewDecoder(r).Decode(&suite)
-	if err != nil {
+	c := csv.NewWriter(w)
+	if err := c.Write(surefire.Header()); err != nil {
 		return err
 	}
 
-	var basedir string
-	var module string
-	for _, v := range suite.Properties.Properties {
-		if v.Name == "basedir" {
-			basedir = v.Value
-			module = filepath.Base(v.Value)
-		}
+	rr, err := surefire.Records(r)
+	if err != nil {
+		return err
 	}
-
-	// maven module, basedir, class name, test name, duration
-	records := [][]string{
-		{"module", "class", "test", "duration", "basedir"},
-	}
-	for _, v := range suite.Cases {
-		records = append(records, []string{module, v.ClassName, v.Name, v.Time, basedir})
-	}
-
-	c := csv.NewWriter(w)
-	for _, record := range records {
+	for _, record := range rr {
 		if err := c.Write(record); err != nil {
 			return err
 		}
 	}
-	// Write any buffered data to the underlying writer (standard output).
+
 	c.Flush()
 	if err := c.Error(); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (sc *separateConverter) Close() error {
+	return nil
+}
+
+func CSVFilename(file string) string {
+	fn := filepath.Base(file)
+	return strings.TrimSuffix(fn, filepath.Ext(fn)) + ".csv"
 }
