@@ -1,5 +1,11 @@
 # sure (Maven Surefire Reports To CSV)
 
+[![Build and Test](https://github.com/teleivo/maven-surefire-reports-to-csv/actions/workflows/build_test.yml/badge.svg)](https://github.com/teleivo/maven-surefire-reports-to-csv/actions/workflows/build_test.yml)
+[![golangci-lint](https://github.com/teleivo/maven-surefire-reports-to-csv/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/teleivo/maven-surefire-reports-to-csv/actions/workflows/golangci-lint.yml)
+[![codecov](https://codecov.io/gh/teleivo/maven-surefire-reports-to-csv/branch/main/graph/badge.svg?token=1VFP7UVS4Z)](https://codecov.io/gh/teleivo/maven-surefire-reports-to-csv)
+[![Release](https://img.shields.io/github/release/teleivo/maven-surefire-reports-to-csv.svg)](https://github.com/teleivo/maven-surefire-reports-to-csv/releases/latest)
+[![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg)](https://github.com/goreleaser)
+
 `sure` helps analyze test count and duration in Java projects built using
 [Maven](https://maven.apache.org/) and
 [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/).
