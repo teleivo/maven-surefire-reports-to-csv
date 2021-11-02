@@ -50,6 +50,8 @@ go build -o sure
 
 ## Limitation
 
+* Was only tested on Maven Surefire reports of schema
+  "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd"
 * You need to concatenate the CSV files into a single file yourself if that is
   what you prefer for your analysis. Be aware that each CSV has a header that
   you will need to ignore. This might work for you :smile;
