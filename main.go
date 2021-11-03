@@ -49,17 +49,14 @@ type csvConverter struct {
 
 func (cc csvConverter) to(dest string) error {
 	s, err := os.Stat(dest)
+	if err == nil && !s.IsDir() {
+		return fmt.Errorf("dest path exists but is not a directory %q", dest)
+	}
 	if errors.Is(err, os.ErrNotExist) {
 		err = os.Mkdir(dest, 0750)
-		if err != nil {
-			return err
-		}
 	}
 	if err != nil {
 		return err
-	}
-	if s != nil && !s.IsDir() {
-		return fmt.Errorf("dest path exists but is not a directory %q", dest)
 	}
 
 	// TODO collect errors in slice and report all of them
