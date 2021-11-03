@@ -7,7 +7,18 @@ import (
 )
 
 func Header() []string {
-	return []string{"module", "class", "test", "duration", "basedir"}
+	return []string{
+		"module",
+		"class",
+		"test",
+		"test duration [seconds]",
+		"test suite duration [seconds]",
+		"test suite tests [number]",
+		"test suite errors [number]",
+		"test suite skipped [number]",
+		"test suite failures [number]",
+		"basedir",
+	}
 }
 
 func Records(r io.Reader) ([][]string, error) {
@@ -27,8 +38,19 @@ func Records(r io.Reader) ([][]string, error) {
 	}
 
 	var records [][]string
-	for _, v := range suite.Cases {
-		records = append(records, []string{module, v.ClassName, v.Name, v.Time, basedir})
+	for _, c := range suite.Cases {
+		records = append(records, []string{
+			module,
+			c.ClassName,
+			c.Name,
+			c.Time,
+			suite.Time,
+			suite.Tests,
+			suite.Errors,
+			suite.Skipped,
+			suite.Failures,
+			basedir,
+		})
 	}
 
 	return records, nil
