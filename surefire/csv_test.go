@@ -41,7 +41,7 @@ func TestConvert(t *testing.T) {
 		},
 		"ReportWithMultipleTests": {
 			input: `<?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.hisp.dhis.analytics.data.AnalyticsServiceTest" time="171.217" tests="4" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.hisp.dhis.analytics.data.AnalyticsServiceTest" time="171.217" tests="4" errors="1" skipped="0" failures="1">
   <properties>
     <property name="java.specification.version" value="11"/>
     <property name="maven.wagon.http.pool" value="false"/>
@@ -75,9 +75,9 @@ func TestConvert(t *testing.T) {
 					"46.089",
 					"171.217",
 					"4",
+					"1",
 					"0",
-					"0",
-					"0",
+					"1",
 					"/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-analytics",
 				},
 				{
@@ -87,9 +87,9 @@ func TestConvert(t *testing.T) {
 					"41.134",
 					"171.217",
 					"4",
+					"1",
 					"0",
-					"0",
-					"0",
+					"1",
 					"/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-analytics",
 				},
 				{
@@ -99,9 +99,9 @@ func TestConvert(t *testing.T) {
 					"42.103",
 					"171.217",
 					"4",
+					"1",
 					"0",
-					"0",
-					"0",
+					"1",
 					"/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-analytics",
 				},
 				{
@@ -111,9 +111,9 @@ func TestConvert(t *testing.T) {
 					"41.879",
 					"171.217",
 					"4",
+					"1",
 					"0",
-					"0",
-					"0",
+					"1",
 					"/home/runner/work/dhis2-core/dhis2-core/dhis-2/dhis-services/dhis-service-analytics",
 				},
 			},
