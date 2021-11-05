@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -137,4 +139,25 @@ func TestCsvConverter(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("FailsIfDestExistsButIsNotADirectory", func(t *testing.T) {
+		destDir := t.TempDir()
+		dest := filepath.Join(destDir, "surefire")
+		err := ioutil.WriteFile(dest, []byte("some content"), 0400)
+		if err != nil {
+			t.Fatalf("failed to create temp file for test: %s", err)
+		}
+
+		var w bytes.Buffer
+		c := csvConverter{from: "", concat: false, log: &w}
+
+		err = c.to(dest)
+
+		if err == nil {
+			t.Fatal("expected an error but got none")
+		}
+		if want := "dest path exists but is not a directory"; !strings.Contains(err.Error(), want) {
+			t.Fatalf("got %q but want it to contain %q", err, want)
+		}
+	})
 }
