@@ -52,3 +52,8 @@ go build -o sure
 
 * Was only tested on Maven Surefire reports of schema
   "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd"
+
+## Related
+
+I created [surefire-test-durations](https://github.com/teleivo/surefire-test-durations) to understand what
+the Surefire timings account for.
