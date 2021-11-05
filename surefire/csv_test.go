@@ -11,6 +11,7 @@ func TestConvert(t *testing.T) {
 	tc := map[string]struct {
 		input string
 		want  [][]string
+		err   bool
 	}{
 		"ReportWithSkippedTestCase": {
 			input: `<?xml version="1.0" encoding="UTF-8"?>
@@ -118,6 +119,13 @@ func TestConvert(t *testing.T) {
 				},
 			},
 		},
+		"InvalidXML": {
+			input: `<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.hisp.dhis.maintenance.HardDeleteAuditTest" time="0.003" tests="1" errors="0" skipped="1" failures="0">
+</tes>`,
+			want: nil,
+			err:  true,
+		},
 	}
 
 	for k, v := range tc {
@@ -125,8 +133,11 @@ func TestConvert(t *testing.T) {
 			r := strings.NewReader(v.input)
 
 			got, err := Records(r)
-			if err != nil {
-				t.Fatalf("expected no error but got %s", err)
+			if v.err && err == nil {
+				t.Fatal("expected an error but got none")
+			}
+			if !v.err && err != nil {
+				t.Fatalf("expected no error but got: %s", err)
 			}
 
 			if diff := cmp.Diff(v.want, got); diff != "" {
