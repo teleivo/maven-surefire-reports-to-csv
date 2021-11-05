@@ -7,7 +7,7 @@
 [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg)](https://github.com/goreleaser)
 
 `sure` helps analyze test count and duration in Java projects built using
-[Maven](https://maven.apache.org/) and
+[Maven](https://maven.apache.org/) and the
 [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/).
 
 Maven Surefire Plugin generates reports after running tests in a Maven module.
@@ -18,7 +18,7 @@ you whish.
 
 ## Usage
 
-Download a binary for your platform at
+Download a binary for your platform from
 [releases](https://github.com/teleivo/maven-surefire-reports-to-csv/releases)
 
 And convert Surefire XML reports to CSV
@@ -52,8 +52,3 @@ go build -o sure
 
 * Was only tested on Maven Surefire reports of schema
   "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd"
-* You need to concatenate the CSV files into a single file yourself if that is
-  what you prefer for your analysis. Be aware that each CSV has a header that
-  you will need to ignore. This might work for you :smile;
-
-    cat ~/somewhere_nice/* | grep -v module > combined.csv
