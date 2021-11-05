@@ -119,6 +119,54 @@ func TestConvert(t *testing.T) {
 				},
 			},
 		},
+		"ReportWithoutProperties": {
+			input: `<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.hisp.dhis.maintenance.HardDeleteAuditTest" time="0.003" tests="1" errors="0" skipped="1" failures="0">
+  <testcase name="" classname="org.hisp.dhis.maintenance.HardDeleteAuditTest" time="0">
+    <skipped/>
+  </testcase>
+</testsuite>`,
+			want: [][]string{
+				{
+					"",
+					"org.hisp.dhis.maintenance.HardDeleteAuditTest",
+					"",
+					"0",
+					"0.003",
+					"1",
+					"0",
+					"1",
+					"0",
+					"",
+				},
+			},
+		},
+		"ReportWithoutPropertyBaseDir": {
+			input: `<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.hisp.dhis.maintenance.HardDeleteAuditTest" time="0.003" tests="1" errors="0" skipped="1" failures="0">
+  <testcase name="" classname="org.hisp.dhis.maintenance.HardDeleteAuditTest" time="0">
+  <properties>
+    <property name="java.specification.version" value="11"/>
+    <property name="file.separator" value="/"/>
+  </properties>
+    <skipped/>
+  </testcase>
+</testsuite>`,
+			want: [][]string{
+				{
+					"",
+					"org.hisp.dhis.maintenance.HardDeleteAuditTest",
+					"",
+					"0",
+					"0.003",
+					"1",
+					"0",
+					"1",
+					"0",
+					"",
+				},
+			},
+		},
 		"InvalidXML": {
 			input: `<?xml version="1.0" encoding="UTF-8"?>
 <testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="org.hisp.dhis.maintenance.HardDeleteAuditTest" time="0.003" tests="1" errors="0" skipped="1" failures="0">
