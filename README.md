@@ -55,5 +55,6 @@ go build -o sure
 
 ## Related
 
-I created [surefire-test-durations](https://github.com/teleivo/surefire-test-durations) to understand what
-the Surefire timings account for.
+I created
+[maven-surefire-test-durations](https://github.com/teleivo/maven-surefire-test-durations)
+to understand what the Surefire timings account for.
