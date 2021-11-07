@@ -151,6 +151,54 @@ func TestCsvConverter(t *testing.T) {
 		}
 	})
 
+	t.Run("IgnoresSubdirWhichCannotBeRead", func(t *testing.T) {
+		src := t.TempDir()
+		subdir := filepath.Join(src, "sealed")
+		err := os.Mkdir(subdir, 7)
+		if err != nil {
+			t.Fatalf("failed to create root read-only %q due to %s", subdir, err)
+		}
+		b, err := ioutil.ReadFile("./testdata/input/TEST-org.hisp.dhis.maintenance.HardDeleteAuditTest.xml")
+		if err != nil {
+			t.Fatalf("failed to read report due to %s", err)
+		}
+		err = ioutil.WriteFile(filepath.Join(src, "TEST-org.hisp.dhis.maintenance.HardDeleteAuditTest.xml"), b, 0440)
+		if err != nil {
+			t.Fatalf("failed to write report due to %s", err)
+		}
+
+		dest := t.TempDir()
+
+		var w bytes.Buffer
+		c := csvConverter{from: src, concat: false, log: &w}
+
+		err = c.to(dest)
+		if err != nil {
+			t.Errorf("expected no error but got: %s", err)
+		}
+		if !strings.HasPrefix(w.String(), "Failed to process") {
+			t.Errorf("want log to start with 'Failed to process', instead got %q", w.String())
+		}
+
+		// ensure other report is still converted
+		de, err := os.ReadDir(dest)
+		if err != nil {
+			t.Fatalf("failed to read dest dir %q due to %s", dest, err)
+		}
+
+		if got, want := len(de), 1; got != want {
+			t.Fatalf("got %d files/dirs, want %d file", got, want)
+		}
+
+		got := de[0]
+		if !got.Type().IsRegular() {
+			t.Errorf("expected regular file to be created instead got %v", got)
+		}
+		if diff := cmp.Diff("TEST-org.hisp.dhis.maintenance.HardDeleteAuditTest.csv", got.Name()); diff != "" {
+			t.Errorf("to() file mismatch (-want +got): \n%s", diff)
+		}
+	})
+
 	t.Run("FailsIfDestExistsButIsNotADirectory", func(t *testing.T) {
 		destDir := t.TempDir()
 		dest := filepath.Join(destDir, "surefire")

@@ -84,7 +84,11 @@ func (cc csvConverter) to(dest string) error {
 	// using WalkDir as godoc of Walk declares it as being more efficient
 	err = filepath.WalkDir(cc.from, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return err
+			if cc.from == path {
+				return err
+			}
+			fmt.Fprintf(cc.log, "Failed to process %q due to %s\n", path, err)
+			return nil
 		}
 		if d.IsDir() || strings.ToLower(filepath.Ext(path)) != ".xml" {
 			return nil
