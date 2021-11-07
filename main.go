@@ -85,6 +85,7 @@ func (cc csvConverter) to(dest string) error {
 	err = filepath.WalkDir(cc.from, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if cc.from == path {
+				// stop the Walk if from cannot be read
 				return err
 			}
 			fmt.Fprintf(cc.log, "Failed to process %q due to %s\n", path, err)
