@@ -81,9 +81,11 @@ func (cc csvConverter) to(dest string) error {
 	defer converter.Close()
 
 	// TODO collect errors in slice and report all of them
-	//nolint:errcheck
-	filepath.WalkDir(cc.from, func(path string, d fs.DirEntry, _ error) error {
-		// TODO what to do on err?
+	// using WalkDir as godoc of Walk declares it as being more efficient
+	err = filepath.WalkDir(cc.from, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		if d.IsDir() || strings.ToLower(filepath.Ext(path)) != ".xml" {
 			return nil
 		}

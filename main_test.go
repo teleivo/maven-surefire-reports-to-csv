@@ -140,6 +140,17 @@ func TestCsvConverter(t *testing.T) {
 		})
 	}
 
+	t.Run("FailsIfSrcDoesNotExist", func(t *testing.T) {
+		var w bytes.Buffer
+		c := csvConverter{from: "testdata/missing_src_directory/", concat: false, log: &w}
+
+		err := c.to(t.TempDir())
+
+		if err == nil {
+			t.Fatal("expected an error but got none")
+		}
+	})
+
 	t.Run("FailsIfDestExistsButIsNotADirectory", func(t *testing.T) {
 		destDir := t.TempDir()
 		dest := filepath.Join(destDir, "surefire")
