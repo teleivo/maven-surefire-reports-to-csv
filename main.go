@@ -86,7 +86,7 @@ func (cc csvConverter) to(dest string) error {
 		if err != nil {
 			if cc.from == path {
 				// stop the Walk if from cannot be read
-				return err
+				return fmt.Errorf("failed to walk %q: %w", cc.from, err)
 			}
 			fmt.Fprintf(cc.log, "Failed to process %q due to %s\n", path, err)
 			return nil
