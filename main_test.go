@@ -208,7 +208,7 @@ func TestCsvConverter(t *testing.T) {
 		}
 
 		var w bytes.Buffer
-		c := csvConverter{from: "", concat: false, log: &w}
+		c := csvConverter{from: "testdata/input", concat: false, log: &w}
 
 		err = c.to(dest)
 
@@ -217,6 +217,30 @@ func TestCsvConverter(t *testing.T) {
 		}
 		if want := "dest path exists but is not a directory"; !strings.Contains(err.Error(), want) {
 			t.Fatalf("got %q but want it to contain %q", err, want)
+		}
+	})
+
+	t.Run("FailsIfDestDoesNotExistAndCannotBeCreated", func(t *testing.T) {
+		d := t.TempDir()
+		parent := filepath.Join(d, "parent")
+		err := os.Mkdir(parent, 0550)
+		if err != nil {
+			t.Fatalf("failed to create dest dir for test: %s", err)
+		}
+		dest := filepath.Join(parent, "dest")
+
+		var w bytes.Buffer
+		c := csvConverter{from: "testdata/input", concat: false, log: &w}
+
+		err = c.to(dest)
+		if err == nil {
+			t.Fatal("expected an error but got none")
+		}
+		_, err = os.Stat(dest)
+		if err == nil {
+			// if destiation does not exist os.Stat errs, if parent dir has exec
+			// bit not set it errs
+			t.Fatal("destination should not be created. expected an error but got none")
 		}
 	})
 }
