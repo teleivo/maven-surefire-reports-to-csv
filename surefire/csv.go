@@ -145,7 +145,7 @@ func (sc *separateConverter) convert(from string) error {
 	}
 	defer r.Close()
 
-	w, err := os.Create(filepath.Join(sc.to, CSVFilename(from)))
+	w, err := os.Create(filepath.Join(sc.to, csvFilename(from)))
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func (sc *separateConverter) Close() error {
 	return nil
 }
 
-func CSVFilename(file string) string {
+func csvFilename(file string) string {
 	fn := filepath.Base(file)
 	return strings.TrimSuffix(fn, filepath.Ext(fn)) + ".csv"
 }
