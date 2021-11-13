@@ -234,7 +234,7 @@ func TestCsvConverter(t *testing.T) {
 
 		err = c.to(dest)
 		if err == nil {
-			t.Fatal("expected an error but got none")
+			t.Error("expected an error but got none")
 		}
 		_, err = os.Stat(dest)
 		if err == nil {
