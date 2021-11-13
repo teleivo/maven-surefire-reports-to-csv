@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -241,6 +242,29 @@ func TestCsvConverter(t *testing.T) {
 			// if destiation does not exist os.Stat errs, if parent dir has exec
 			// bit not set it errs
 			t.Fatal("destination should not be created. expected an error but got none")
+		}
+	})
+}
+
+func TestConcatConverter(t *testing.T) {
+	t.Run("FailsIfDestCannotBeCreated", func(t *testing.T) {
+		dest := filepath.Join(t.TempDir(), "dest")
+		err := os.Mkdir(dest, 0440)
+		if err != nil {
+			t.Fatalf("failed to create dest dir for test: %s", err)
+		}
+
+		cc := &concatConverter{to: dest, once: &sync.Once{}}
+
+		err = cc.convert("testdata/input/TEST-org.hisp.dhis.maintenance.HardDeleteAuditTest.xml")
+		if err == nil {
+			t.Error("expected an error but got none")
+		}
+		_, err = os.Stat(filepath.Join(dest, "surefire.csv"))
+		if err == nil {
+			// if destiation does not exist os.Stat errs, if parent dir has exec
+			// bit not set it errs
+			t.Fatal("surefire.csv should not be created. expected an error but got none")
 		}
 	})
 }

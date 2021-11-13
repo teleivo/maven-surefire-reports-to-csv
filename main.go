@@ -128,10 +128,11 @@ type separateConverter struct {
 }
 
 func (cc *concatConverter) convert(from string) error {
-	// TODO error handling how to?
 	var err error
 	cc.once.Do(func() {
-		w, err := os.Create(path.Join(cc.to, "surefire.csv"))
+		// declaration needed so err is closed over. w, err := ... does not work
+		var w *os.File
+		w, err = os.Create(path.Join(cc.to, "surefire.csv"))
 		if err != nil {
 			return
 		}
