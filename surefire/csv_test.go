@@ -411,7 +411,7 @@ func TestCsvConverter(t *testing.T) {
 }
 
 func TestConcatConverter(t *testing.T) {
-	t.Run("FailsIfDestCannotBeCreated", func(t *testing.T) {
+	t.Run("FailsIfToCannotBeCreated", func(t *testing.T) {
 		dest := filepath.Join(t.TempDir(), "dest")
 		err := os.Mkdir(dest, 0440)
 		if err != nil {
@@ -429,6 +429,32 @@ func TestConcatConverter(t *testing.T) {
 			// if destiation does not exist os.Stat errs, if parent dir has exec
 			// bit not set it errs
 			t.Fatal("surefire.csv should not be created. expected an error but got none")
+		}
+	})
+
+	t.Run("FailsIfFromCannotBeRead", func(t *testing.T) {
+		src := filepath.Join(t.TempDir(), "src")
+		err := os.Mkdir(src, 0750)
+		if err != nil {
+			t.Fatalf("failed to create src dir for test: %s", err)
+		}
+		f := filepath.Join(src, "non-readable")
+		err = os.WriteFile(f, []byte("data"), 0004)
+		if err != nil {
+			t.Fatalf("failed to create non-readable file for test: %s", err)
+		}
+
+		cc := &concatConverter{to: t.TempDir(), once: &sync.Once{}}
+
+		err = cc.convert(f)
+		if err == nil {
+			t.Error("expected an error but got none")
+		}
+		// the to file will currently still be created and not removed if the
+		// only file to convert fails conversion
+		_, err = os.Stat(filepath.Join(cc.to, "surefire.csv"))
+		if err != nil {
+			t.Fatalf("surefire.csv should have been created. expected no error but got %s", err)
 		}
 	})
 }
