@@ -14,7 +14,7 @@ import (
 	"sync"
 )
 
-func Header() []string {
+func header() []string {
 	return []string{
 		"module",
 		"class",
@@ -29,7 +29,7 @@ func Header() []string {
 	}
 }
 
-func Records(r io.Reader) ([][]string, error) {
+func records(r io.Reader) ([][]string, error) {
 	var suite TestSuite
 	err := xml.NewDecoder(r).Decode(&suite)
 	if err != nil {
@@ -150,7 +150,7 @@ func (cc *concatConverter) convert(from string) error {
 
 		cc.w = w
 		cc.csv = csv.NewWriter(w)
-		err = cc.csv.Write(Header())
+		err = cc.csv.Write(header())
 	})
 	if err != nil {
 		return err
@@ -162,7 +162,7 @@ func (cc *concatConverter) convert(from string) error {
 	}
 	defer r.Close()
 
-	rr, err := Records(r)
+	rr, err := records(r)
 	if err != nil {
 		return err
 	}
@@ -202,11 +202,11 @@ func (sc *separateConverter) convert(from string) error {
 	defer w.Close()
 
 	c := csv.NewWriter(w)
-	if err := c.Write(Header()); err != nil {
+	if err := c.Write(header()); err != nil {
 		return err
 	}
 
-	rr, err := Records(r)
+	rr, err := records(r)
 	if err != nil {
 		return err
 	}

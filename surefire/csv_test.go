@@ -214,7 +214,7 @@ func TestConvert(t *testing.T) {
 		t.Run(k, func(t *testing.T) {
 			r := strings.NewReader(v.input)
 
-			got, err := Records(r)
+			got, err := records(r)
 			if v.err && err == nil {
 				t.Fatal("expected an error but got none")
 			}
